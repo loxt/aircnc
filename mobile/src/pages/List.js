@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { AsyncStorage, ScrollView, Image, StyleSheet, SafeAreaView } from 'react-native';
+import socketio from 'socket.io-client';
+import { AsyncStorage, ScrollView, Image, Alert, StyleSheet, SafeAreaView } from 'react-native';
 
 import logo from '../assets/logo.png';
 
@@ -13,6 +14,22 @@ export default function List() {
       const techsArray = storagedTechs.split(',').map(tech => tech.trim());
 
       setTechs(techsArray);
+    });
+  }, []);
+
+  useEffect(() => {
+    AsyncStorage.getItem('user').then(user_id => {
+      const socket = socketio('http://192.168.100.148:3333', {
+        query: { user_id }
+      });
+
+      socket.on('booking_response', booking => {
+        Alert.alert(
+          `Sua reserva em ${booking.spot.company} em ${booking.date} foi ${
+            booking.approved ? 'APROVADA' : 'REJEITADA'
+          }`
+        );
+      });
     });
   }, []);
 
